@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/ohookins/contentful-go"
-  branch = "fixes"
+  branch = "create_entries"
 
 [prune]
   go-tests = true

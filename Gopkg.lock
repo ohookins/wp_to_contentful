@@ -8,14 +8,14 @@
   revision = "9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d"
 
 [[projects]]
-  branch = "fixes"
+  branch = "create_entries"
   name = "github.com/ohookins/contentful-go"
   packages = ["."]
-  revision = "1ff9a7808ce26514186d761c4933b80348fc5d16"
+  revision = "d362fa0711dfaf8980095bcb55dd6833553369c1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "20b6418c22bcba87fc13a225fd9ab962018a029f0fafc1d7702c440645f61709"
+  inputs-digest = "1d0bc6296d6b49c339437bd54b67e2e532b98121ff29f0a8289bc3ed73641212"
   solver-name = "gps-cdcl"
   solver-version = 1
