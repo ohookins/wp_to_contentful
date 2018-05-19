@@ -42,6 +42,16 @@ func main() {
 		return
 	}
 
+	err = deleteCategories(cma, *space)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+
+	err = createCategories(cma, body.Channel.WPCategory, *space)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	err = deleteTags(cma, *space)
 	if err != nil {
 		fmt.Printf("%v\n", err)
