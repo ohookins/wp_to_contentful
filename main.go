@@ -42,6 +42,16 @@ func main() {
 		return
 	}
 
+	err = deleteAuthors(cma, *space)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+
+	err = createAuthors(cma, body.Channel.Author, *space)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	err = deleteCategories(cma, *space)
 	if err != nil {
 		fmt.Printf("%v\n", err)
