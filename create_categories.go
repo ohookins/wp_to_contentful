@@ -58,38 +58,3 @@ func createCategories(cma *ctf.Contentful, categories []wpcategory, space string
 
 	return nil
 }
-
-func deleteCategories(cma *ctf.Contentful, space string) error {
-	ct := &ctf.ContentType{Sys: &ctf.Sys{ID: "category"}}
-
-	collection := cma.Entries.List(space)
-	collection.Query.ContentType("category")
-
-	for {
-		collection.Next()
-		if len(collection.Items) == 0 {
-			break
-		}
-
-		for _, entry := range collection.ToEntry() {
-			fmt.Printf("deleting category with ID %s\n", entry.Sys.ID)
-			_ = cma.Entries.Unpublish(space, entry)
-			_ = cma.Entries.Delete(space, entry.Sys.ID)
-		}
-	}
-
-	fmt.Println("deactivating 'category' content type")
-	if err := cma.ContentTypes.Deactivate(space, ct); err != nil {
-		if _, ok := err.(ctf.NotFoundError); !ok {
-			return err
-		}
-	}
-
-	fmt.Println("deleting 'category' content type")
-	if err := cma.ContentTypes.Delete(space, ct); err != nil {
-		if _, ok := err.(ctf.NotFoundError); !ok {
-			return err
-		}
-	}
-	return nil
-}

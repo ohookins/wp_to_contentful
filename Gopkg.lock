@@ -11,7 +11,7 @@
   branch = "create_entries"
   name = "github.com/ohookins/contentful-go"
   packages = ["."]
-  revision = "d362fa0711dfaf8980095bcb55dd6833553369c1"
+  revision = "21df129eb576dd6676325eebc915066e276e5d5d"
 
 [solve-meta]
   analyzer-name = "dep"
