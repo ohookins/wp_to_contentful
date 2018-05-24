@@ -8,56 +8,42 @@ import (
 )
 
 func createAttachments(cma *ctf.Contentful, items []item, space string) error {
-	ct := &ctf.ContentType{
-		Sys:          &ctf.Sys{ID: "attachment"},
-		Name:         "Attachment",
-		Description:  "A file attachment or image",
-		DisplayField: "slug",
-		Fields: []*ctf.Field{
-			&ctf.Field{
-				ID:   "slug",
-				Name: "Slug",
-				Type: ctf.FieldTypeText,
-			},
-		},
-	}
-
-	fmt.Println("creating new 'attachment' content type")
-	if err := cma.ContentTypes.Upsert(space, ct); err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-
-	fmt.Println("activating new 'attachment' content type")
-	if err := cma.ContentTypes.Activate(space, ct); err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-
-	fmt.Printf("creating %d new attachments\n", len(items))
+	fmt.Printf("creating %d new assets\n", len(items))
 	for _, item := range items {
 		// Skip anything which is not an attachment
 		if !strings.Contains(item.Link, "attachment_id") {
 			continue
 		}
 
-		entry := &ctf.Entry{
+		// Get the actual filename of the attachment
+		parts := strings.Split(item.Link, "/")
+		filename := parts[len(parts)-1]
+
+		asset := &ctf.Asset{
 			Sys: &ctf.Sys{
-				ID:          item.PostName,
-				ContentType: ct,
+				ID: item.PostName,
 			},
-			Fields: map[string]interface{}{
-				"slug": map[string]string{
-					"en-US": item.PostName,
+			Fields: &ctf.FileFields{
+				Title:       map[string]string{"en-US": item.Title},
+				Description: map[string]string{"en-US": fmt.Sprintf("Linked from post ID %d", item.PostID)},
+				File: map[string]*ctf.File{
+					"en-US": &ctf.File{
+						Name:        filename,
+						URL:         item.Guid,
+						ContentType: "image/jpeg",
+					},
 				},
 			},
 		}
 
-		fmt.Printf("creating new attachment with ID %s\n", item.PostName)
-		if err := cma.Entries.Upsert(space, entry); err != nil {
+		fmt.Printf("creating new asset with ID %s\n", item.PostName)
+		if err := cma.Assets.Upsert(space, asset); err != nil {
 			return err
 		}
-		if err := cma.Entries.Publish(space, entry); err != nil {
+		if err := cma.Assets.Process(space, asset); err != nil {
+			return err
+		}
+		if err := cma.Assets.Publish(space, asset); err != nil {
 			return err
 		}
 	}

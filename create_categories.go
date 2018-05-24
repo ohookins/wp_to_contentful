@@ -23,13 +23,13 @@ func createCategories(cma *ctf.Contentful, categories []wpcategory, space string
 
 	fmt.Println("creating new 'category' content type")
 	if err := cma.ContentTypes.Upsert(space, ct); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("creating category error: ", err.Error())
 		return err
 	}
 
 	fmt.Println("activating new 'category' content type")
 	if err := cma.ContentTypes.Activate(space, ct); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("activating category error: ", err.Error())
 		return err
 	}
 
@@ -40,8 +40,8 @@ func createCategories(cma *ctf.Contentful, categories []wpcategory, space string
 				ID:          "cat_" + category.NiceName,
 				ContentType: ct,
 			},
-			Fields: map[string]interface{}{
-				"realname": map[string]string{
+			Fields: map[string]ctf.LocalizedField{
+				"realname": ctf.LocalizedField{
 					"en-US": category.CatName,
 				},
 			},

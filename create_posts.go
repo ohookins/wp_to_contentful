@@ -46,8 +46,8 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 				ID:          item.PostName,
 				ContentType: ct,
 			},
-			Fields: map[string]interface{}{
-				"slug": map[string]string{
+			Fields: map[string]ctf.LocalizedField{
+				"slug": ctf.LocalizedField{
 					"en-US": item.PostName,
 				},
 			},

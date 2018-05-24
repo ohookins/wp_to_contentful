@@ -14,6 +14,7 @@ func main() {
 	token := flag.String("token", "", "Personal CMA Token")
 	skipTags := flag.Bool("skiptags", false, "Skip tag deletion/creation")
 	skipPosts := flag.Bool("skipposts", false, "Skip post deletion/creation")
+	skipAssets := flag.Bool("skipassets", false, "Skip asset/attachment deletion/creation")
 	flag.Parse()
 
 	if *filename == "" {
@@ -76,14 +77,16 @@ func main() {
 		}
 	}
 
-	err = deleteContentAndType(cma, *space, "attachment")
-	if err != nil {
-		fmt.Printf("%v\n", err)
-	}
+	if !*skipAssets {
+		err = deleteAssets(cma, *space)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
 
-	err = createAttachments(cma, body.Channel.Item, *space)
-	if err != nil {
-		fmt.Println(err)
+		err = createAttachments(cma, body.Channel.Item, *space)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	if !*skipPosts {

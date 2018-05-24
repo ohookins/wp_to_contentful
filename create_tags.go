@@ -40,8 +40,8 @@ func createTags(cma *ctf.Contentful, tags []wptag, space string) error {
 				ID:          "tag_" + tag.Slug,
 				ContentType: ct,
 			},
-			Fields: map[string]interface{}{
-				"realname": map[string]string{
+			Fields: map[string]ctf.LocalizedField{
+				"realname": ctf.LocalizedField{
 					"en-US": tag.Name,
 				},
 			},

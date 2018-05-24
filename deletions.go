@@ -40,3 +40,22 @@ func deleteContentAndType(cma *ctf.Contentful, space, ctName string) error {
 	}
 	return nil
 }
+
+func deleteAssets(cma *ctf.Contentful, space string) error {
+	collection := cma.Assets.List(space)
+
+	for {
+		collection.Next()
+		if len(collection.Items) == 0 {
+			break
+		}
+
+		for _, asset := range collection.ToAsset() {
+			fmt.Printf("deleting asset with ID %s\n", asset.Sys.ID)
+			_ = cma.Assets.Unpublish(space, asset)
+			_ = cma.Assets.Delete(space, asset)
+		}
+	}
+
+	return nil
+}
