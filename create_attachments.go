@@ -2,22 +2,56 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
+	"time"
 
 	ctf "github.com/ohookins/contentful-go"
 )
 
-func createAttachments(cma *ctf.Contentful, items []item, space string) error {
-	fmt.Printf("creating %d new assets\n", len(items))
-	for _, item := range items {
-		// Skip anything which is not an attachment
-		if !strings.Contains(item.Link, "attachment_id") {
-			continue
+func getContentTypeFor(url string) string {
+	resp, err := http.Head(url)
+	if err != nil {
+		fmt.Println(err.Error())
+		return ""
+	}
+
+	return resp.Header.Get("Content-Type")
+}
+
+func getUpdatedAsset(cma *ctf.Contentful, space, assetID string) (*ctf.Asset, error) {
+	for {
+		asset, err := cma.Assets.Get(space, assetID)
+		if err != nil {
+			return nil, err
 		}
 
+		// URL property of the localized asset will be replaced with the
+		// ctfassets.net URL of the processed asset when it is completed.
+		if asset.Fields.File["en-US"].URL != "" {
+			return asset, nil
+		}
+		time.Sleep(time.Second)
+	}
+}
+
+func createAttachments(cma *ctf.Contentful, items []item, space string) error {
+	// filter out all actual attachments
+	attachments := []item{}
+	for _, item := range items {
+		if strings.Contains(item.Link, "attachment_id") {
+			attachments = append(attachments, item)
+		}
+	}
+
+	fmt.Printf("creating %d new assets\n", len(attachments))
+	for _, item := range attachments {
 		// Get the actual filename of the attachment
-		parts := strings.Split(item.Link, "/")
+		parts := strings.Split(item.Guid, "/")
 		filename := parts[len(parts)-1]
+
+		// Determine the content type of the currently live attachment in WP
+		contentType := getContentTypeFor(item.Guid)
 
 		asset := &ctf.Asset{
 			Sys: &ctf.Sys{
@@ -29,8 +63,8 @@ func createAttachments(cma *ctf.Contentful, items []item, space string) error {
 				File: map[string]*ctf.File{
 					"en-US": &ctf.File{
 						Name:        filename,
-						URL:         item.Guid,
-						ContentType: "image/jpeg",
+						UploadURL:   item.Guid,
+						ContentType: contentType,
 					},
 				},
 			},
@@ -43,6 +77,13 @@ func createAttachments(cma *ctf.Contentful, items []item, space string) error {
 		if err := cma.Assets.Process(space, asset); err != nil {
 			return err
 		}
+
+		// Block until the asset is processed
+		asset, err := getUpdatedAsset(cma, space, asset.Sys.ID)
+		if err != nil {
+			return err
+		}
+
 		if err := cma.Assets.Publish(space, asset); err != nil {
 			return err
 		}
