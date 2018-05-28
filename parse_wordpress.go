@@ -43,6 +43,7 @@ type item struct {
 	Link    string `xml:"link"`
 	PubDate string `xml:"pubDate"`       // non-default format, need to parse later
 	Creator string `xml:"creator",cdata` // Encoded author string
+	Status  string `xml:"status",cdata`  // Encoded status string - published/draft
 
 	// Permalink of blog post, or full URL to binary if an image/attachement
 	Guid string `xml:"guid"`
