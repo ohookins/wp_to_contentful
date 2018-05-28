@@ -8,7 +8,12 @@ import (
 	ctf "github.com/ohookins/contentful-go"
 )
 
+// Map of original wordpress URLs to new CTF URLs for attachments and posts.
+var replacementURLs map[string]string
+
 func main() {
+	replacementURLs = make(map[string]string)
+
 	filename := flag.String("filename", "", "Filename of XML export of Wordpress blog")
 	space := flag.String("space", "", "Space ID on Contentful")
 	token := flag.String("token", "", "Personal CMA Token")

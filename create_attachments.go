@@ -84,6 +84,10 @@ func createAttachments(cma *ctf.Contentful, items []item, space string) error {
 			return err
 		}
 
+		// Add the new URL to the map for later replacement in post links.
+		replacementURLs[strings.Replace(item.Guid, "http:", "https:", -1)] = asset.Fields.File["en-US"].URL
+		replacementURLs[item.Guid] = asset.Fields.File["en-US"].URL
+
 		if err := cma.Assets.Publish(space, asset); err != nil {
 			return err
 		}

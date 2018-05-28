@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	ctf "github.com/ohookins/contentful-go"
@@ -17,6 +18,23 @@ func createValidSlug(slug string) string {
 	}
 
 	return slug
+}
+
+// For some reason, the converted markdown contains a lot of escaped characters
+func sanitisePost(body string) string {
+	re := regexp.MustCompile("\\([\"'.$^#_-])")
+
+	return re.ReplaceAllString(body, "$1")
+}
+
+// Replace original wordpress URLs in the content with their Contentful
+// counterparts.
+func replaceURLs(body string) string {
+	for origURL, newURL := range replacementURLs {
+		body = strings.Replace(body, origURL, newURL, -1)
+	}
+
+	return body
 }
 
 func convertToMarkdown(content []string) string {
@@ -48,7 +66,9 @@ func convertToMarkdown(content []string) string {
 	}
 
 	md, _ := ioutil.ReadFile(fdst.Name())
-	return string(md)
+	postBody := sanitisePost(string(md))
+	postBody = replaceURLs(postBody)
+	return postBody
 }
 
 func createPosts(cma *ctf.Contentful, items []item, space string) error {
@@ -121,6 +141,12 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 		if err := cma.Entries.Publish(space, entry); err != nil {
 			return err
 		}
+
+		// Add this entry to the list of URLs to replace. Entries are processed
+		// in chronological order from the XML dump so if we have
+		// back-references we should be able to replace all references.
+		replacementURLs[strings.Replace(post.Guid, "http:", "https:", -1)] = "https://paperairoplane.net/" + post.PostName
+		replacementURLs[post.Guid] = "https://paperairoplane.net/" + post.PostName
 	}
 
 	return nil
