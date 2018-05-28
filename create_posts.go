@@ -11,6 +11,8 @@ import (
 	ctf "github.com/ohookins/contentful-go"
 )
 
+var sanitisePostRE = regexp.MustCompile(`\\(["'.$^#_-~])`)
+
 // post IDs can be no longer than 64 characters long
 func createValidSlug(slug string) string {
 	if len(slug) > 64 {
@@ -22,9 +24,7 @@ func createValidSlug(slug string) string {
 
 // For some reason, the converted markdown contains a lot of escaped characters
 func sanitisePost(body string) string {
-	re := regexp.MustCompile("\\([\"'.$^#_-])")
-
-	return re.ReplaceAllString(body, "$1")
+	return sanitisePostRE.ReplaceAllString(body, "$1")
 }
 
 // Replace original wordpress URLs in the content with their Contentful
