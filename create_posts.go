@@ -183,6 +183,9 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 				"slug": map[string]string{
 					"en-US": post.PostName,
 				},
+				"title": map[string]string{
+					"en-US": post.Title,
+				},
 				"body": map[string]string{
 					"en-US": content,
 				},
