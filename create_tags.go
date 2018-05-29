@@ -6,29 +6,29 @@ import (
 	ctf "github.com/ohookins/contentful-go"
 )
 
-func createTags(cma *ctf.Contentful, tags []wptag, space string) error {
-	ct := &ctf.ContentType{
-		Sys:          &ctf.Sys{ID: "tag"},
-		Name:         "Tag",
-		Description:  "Common tags for types of content",
-		DisplayField: "realname",
-		Fields: []*ctf.Field{
-			&ctf.Field{
-				ID:   "realname",
-				Name: "Realname",
-				Type: ctf.FieldTypeText,
-			},
+var tagContentType = &ctf.ContentType{
+	Sys:          &ctf.Sys{ID: "tag"},
+	Name:         "Tag",
+	Description:  "Common tags for types of content",
+	DisplayField: "realname",
+	Fields: []*ctf.Field{
+		&ctf.Field{
+			ID:   "realname",
+			Name: "Realname",
+			Type: ctf.FieldTypeText,
 		},
-	}
+	},
+}
 
+func createTags(cma *ctf.Contentful, tags []wptag, space string) error {
 	fmt.Println("creating new 'tag' content type")
-	if err := cma.ContentTypes.Upsert(space, ct); err != nil {
+	if err := cma.ContentTypes.Upsert(space, tagContentType); err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
 
 	fmt.Println("activating new 'tag' content type")
-	if err := cma.ContentTypes.Activate(space, ct); err != nil {
+	if err := cma.ContentTypes.Activate(space, tagContentType); err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
@@ -38,7 +38,7 @@ func createTags(cma *ctf.Contentful, tags []wptag, space string) error {
 		entry := &ctf.Entry{
 			Sys: &ctf.Sys{
 				ID:          "tag_" + tag.Slug,
-				ContentType: ct,
+				ContentType: tagContentType,
 			},
 			Fields: map[string]interface{}{
 				"realname": map[string]string{

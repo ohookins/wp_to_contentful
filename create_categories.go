@@ -6,29 +6,29 @@ import (
 	ctf "github.com/ohookins/contentful-go"
 )
 
-func createCategories(cma *ctf.Contentful, categories []wpcategory, space string) error {
-	ct := &ctf.ContentType{
-		Sys:          &ctf.Sys{ID: "category"},
-		Name:         "Category",
-		Description:  "Main categories/themes of content",
-		DisplayField: "realname",
-		Fields: []*ctf.Field{
-			&ctf.Field{
-				ID:   "realname",
-				Name: "Realname",
-				Type: ctf.FieldTypeText,
-			},
+var categoryContentType = &ctf.ContentType{
+	Sys:          &ctf.Sys{ID: "category"},
+	Name:         "Category",
+	Description:  "Main categories/themes of content",
+	DisplayField: "realname",
+	Fields: []*ctf.Field{
+		&ctf.Field{
+			ID:   "realname",
+			Name: "Realname",
+			Type: ctf.FieldTypeText,
 		},
-	}
+	},
+}
 
+func createCategories(cma *ctf.Contentful, categories []wpcategory, space string) error {
 	fmt.Println("creating new 'category' content type")
-	if err := cma.ContentTypes.Upsert(space, ct); err != nil {
+	if err := cma.ContentTypes.Upsert(space, categoryContentType); err != nil {
 		fmt.Println("creating category error: ", err.Error())
 		return err
 	}
 
 	fmt.Println("activating new 'category' content type")
-	if err := cma.ContentTypes.Activate(space, ct); err != nil {
+	if err := cma.ContentTypes.Activate(space, categoryContentType); err != nil {
 		fmt.Println("activating category error: ", err.Error())
 		return err
 	}
@@ -38,7 +38,7 @@ func createCategories(cma *ctf.Contentful, categories []wpcategory, space string
 		entry := &ctf.Entry{
 			Sys: &ctf.Sys{
 				ID:          "cat_" + category.NiceName,
-				ContentType: ct,
+				ContentType: categoryContentType,
 			},
 			Fields: map[string]interface{}{
 				"realname": map[string]string{
