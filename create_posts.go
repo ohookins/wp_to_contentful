@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 
 	ctf "github.com/ohookins/contentful-go"
 )
@@ -144,6 +145,17 @@ func extractCategoryAndTags(categories []category) (cat string, tags []string) {
 	return
 }
 
+func reformatPubDate(wpdate string) string {
+	// e.g. Sat, 11 Sep 2010 22:00:54 +0000
+	t, err := time.Parse("Mon, 2 Jan 2006 15:04:05 -0700", wpdate)
+	if err != nil {
+		return ""
+	}
+
+	// ISO8601
+	return t.Format("2006-01-02T15:04:05")
+}
+
 func createPosts(cma *ctf.Contentful, items []item, space string) error {
 	fmt.Println("creating new 'post' content type")
 	if err := cma.ContentTypes.Upsert(space, postContentType); err != nil {
@@ -206,6 +218,9 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 							ID:       "cat_" + category,
 						},
 					},
+				},
+				"published": map[string]string{
+					"en-US": reformatPubDate(post.PubDate),
 				},
 			},
 		}
