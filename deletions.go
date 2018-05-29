@@ -25,20 +25,21 @@ func deleteContentAndType(cma *ctf.Contentful, space, ctName string) error {
 		}
 	}
 
+	var err error
 	fmt.Printf("deactivating '%s' content type\n", ctName)
-	if err := cma.ContentTypes.Deactivate(space, ct); err != nil {
+	if err = cma.ContentTypes.Deactivate(space, ct); err != nil {
 		if _, ok := err.(ctf.NotFoundError); !ok {
 			return err
 		}
 	}
 
 	fmt.Printf("deleting '%s' content type\n", ctName)
-	if err := cma.ContentTypes.Delete(space, ct); err != nil {
+	if err = cma.ContentTypes.Delete(space, ct); err != nil {
 		if _, ok := err.(ctf.NotFoundError); !ok {
 			return err
 		}
 	}
-	return nil
+	return err
 }
 
 func deleteAssets(cma *ctf.Contentful, space string) error {

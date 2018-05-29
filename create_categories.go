@@ -40,8 +40,8 @@ func createCategories(cma *ctf.Contentful, categories []wpcategory, space string
 				ID:          "cat_" + category.NiceName,
 				ContentType: ct,
 			},
-			Fields: map[string]ctf.LocalizedField{
-				"realname": ctf.LocalizedField{
+			Fields: map[string]interface{}{
+				"realname": map[string]string{
 					"en-US": category.CatName,
 				},
 			},

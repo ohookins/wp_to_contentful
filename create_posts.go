@@ -11,7 +11,59 @@ import (
 	ctf "github.com/ohookins/contentful-go"
 )
 
-var sanitisePostRE = regexp.MustCompile(`\\(["'.$^#_-~])`)
+var (
+	sanitisePostRE  = regexp.MustCompile(`\\(["'.$^#_-~\n<>])`)
+	imageResizeRE   = regexp.MustCompile(`\{\.alignleft[^}]+\}`)
+	postContentType = &ctf.ContentType{
+		Sys:          &ctf.Sys{ID: "post"},
+		Name:         "Post",
+		Description:  "A blog post/entry",
+		DisplayField: "slug",
+		Fields: []*ctf.Field{
+			&ctf.Field{
+				ID:   "slug",
+				Name: "Slug",
+				Type: ctf.FieldTypeText,
+			},
+			&ctf.Field{
+				ID:   "title",
+				Name: "Title",
+				Type: ctf.FieldTypeText,
+			},
+			&ctf.Field{
+				ID:       "author",
+				Name:     "Author",
+				Type:     ctf.FieldTypeLink,
+				LinkType: "Entry",
+			},
+			&ctf.Field{
+				ID:   "published",
+				Name: "Publishing Date",
+				Type: ctf.FieldTypeDate,
+			},
+			&ctf.Field{
+				ID:       "category",
+				Name:     "Category",
+				Type:     ctf.FieldTypeLink,
+				LinkType: "Entry",
+			},
+			&ctf.Field{
+				ID:   "tags",
+				Name: "Tags",
+				Type: ctf.FieldTypeArray,
+				Items: &ctf.FieldTypeArrayItem{
+					Type:     ctf.FieldTypeLink,
+					LinkType: "Entry",
+				},
+			},
+			&ctf.Field{
+				ID:   "body",
+				Name: "Body",
+				Type: ctf.FieldTypeText,
+			},
+		},
+	}
+)
 
 // post IDs can be no longer than 64 characters long
 func createValidSlug(slug string) string {
@@ -24,7 +76,11 @@ func createValidSlug(slug string) string {
 
 // For some reason, the converted markdown contains a lot of escaped characters
 func sanitisePost(body string) string {
-	return sanitisePostRE.ReplaceAllString(body, "$1")
+	s := sanitisePostRE.ReplaceAllString(body, "$1")
+
+	// images have some extraneous resizing styling which is unnecessary, e.g.:
+	// {.alignleft .size-medium .wp-image-115 width="300" height="300"}
+	return imageResizeRE.ReplaceAllString(s, "")
 }
 
 // Replace original wordpress URLs in the content with their Contentful
@@ -35,6 +91,10 @@ func replaceURLs(body string) string {
 	}
 
 	return body
+}
+
+func convertSourceDocumentLineEnds(content string) []byte {
+	return []byte(strings.Replace(content, "\n", "<br/>", -1))
 }
 
 func convertToMarkdown(content []string) string {
@@ -55,7 +115,7 @@ func convertToMarkdown(content []string) string {
 	defer fdst.Close()
 
 	// posts seem to have two content sections, the second is empty
-	fsrc.Write([]byte(content[0]))
+	fsrc.Write(convertSourceDocumentLineEnds(content[0]))
 
 	// Call pandoc on the document to convert it
 	cmd := exec.Command("pandoc", "--from", "html", "--to", "markdown", "-o", fdst.Name(), fsrc.Name())
@@ -71,34 +131,28 @@ func convertToMarkdown(content []string) string {
 	return postBody
 }
 
-func createPosts(cma *ctf.Contentful, items []item, space string) error {
-	ct := &ctf.ContentType{
-		Sys:          &ctf.Sys{ID: "post"},
-		Name:         "Post",
-		Description:  "A blog post/entry",
-		DisplayField: "slug",
-		Fields: []*ctf.Field{
-			&ctf.Field{
-				ID:   "slug",
-				Name: "Slug",
-				Type: ctf.FieldTypeText,
-			},
-			&ctf.Field{
-				ID:   "body",
-				Name: "Body",
-				Type: ctf.FieldTypeText,
-			},
-		},
-	}
+func extractCategoryAndTags(categories []category) (cat string, tags []string) {
+	for _, c := range categories {
+		if c.Domain == "category" {
+			cat = c.Name
+		}
 
+		if c.Domain == "post_tag" {
+			tags = append(tags, c.Name)
+		}
+	}
+	return
+}
+
+func createPosts(cma *ctf.Contentful, items []item, space string) error {
 	fmt.Println("creating new 'post' content type")
-	if err := cma.ContentTypes.Upsert(space, ct); err != nil {
+	if err := cma.ContentTypes.Upsert(space, postContentType); err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
 
 	fmt.Println("activating new 'post' content type")
-	if err := cma.ContentTypes.Activate(space, ct); err != nil {
+	if err := cma.ContentTypes.Activate(space, postContentType); err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
@@ -116,20 +170,39 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 
 	for _, post := range posts {
 		content := convertToMarkdown(post.Content)
-
 		finalSlug := createValidSlug(post.PostName)
+
+		category, _ := extractCategoryAndTags(post.Categories)
 
 		entry := &ctf.Entry{
 			Sys: &ctf.Sys{
 				ID:          finalSlug,
-				ContentType: ct,
+				ContentType: postContentType,
 			},
-			Fields: map[string]ctf.LocalizedField{
-				"slug": ctf.LocalizedField{
+			Fields: map[string]interface{}{
+				"slug": map[string]string{
 					"en-US": post.PostName,
 				},
-				"body": ctf.LocalizedField{
+				"body": map[string]string{
 					"en-US": content,
+				},
+				"author": map[string]interface{}{
+					"en-US": map[string]*ctf.Sys{
+						"sys": &ctf.Sys{
+							Type:     "Link",
+							LinkType: "Entry",
+							ID:       "author_" + post.Creator,
+						},
+					},
+				},
+				"category": map[string]interface{}{
+					"en-US": map[string]*ctf.Sys{
+						"sys": &ctf.Sys{
+							Type:     "Link",
+							LinkType: "Entry",
+							ID:       "cat_" + category,
+						},
+					},
 				},
 			},
 		}

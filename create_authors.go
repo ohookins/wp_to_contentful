@@ -55,17 +55,17 @@ func createAuthors(cma *ctf.Contentful, authors []author, space string) error {
 				ID:          "author_" + a.Login,
 				ContentType: ct,
 			},
-			Fields: map[string]ctf.LocalizedField{
-				"login": ctf.LocalizedField{
+			Fields: map[string]interface{}{
+				"login": map[string]string{
 					"en-US": a.Login,
 				},
-				"email": ctf.LocalizedField{
+				"email": map[string]string{
 					"en-US": a.Email,
 				},
-				"firstName": ctf.LocalizedField{
+				"firstName": map[string]string{
 					"en-US": a.FirstName,
 				},
-				"lastName": ctf.LocalizedField{
+				"lastName": map[string]string{
 					"en-US": a.LastName,
 				},
 			},
