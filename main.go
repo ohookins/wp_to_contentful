@@ -105,4 +105,7 @@ func main() {
 			fmt.Println(err)
 		}
 	}
+
+	// Generate a redirects file for Netlify from the replacement URLs map
+	generateRedirects(replacementURLs)
 }

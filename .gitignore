@@ -1,3 +1,4 @@
 *.xml
 vendor
 wp_to_contentful
+_redirects
