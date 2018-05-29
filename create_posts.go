@@ -156,6 +156,22 @@ func reformatPubDate(wpdate string) string {
 	return t.Format("2006-01-02T15:04:05")
 }
 
+func generateTagArray(tags []string) []map[string]*ctf.Sys {
+	result := []map[string]*ctf.Sys{}
+
+	for _, tag := range tags {
+		result = append(result, map[string]*ctf.Sys{
+			"sys": &ctf.Sys{
+				Type:     "Link",
+				LinkType: "Entry",
+				ID:       "tag_" + tag,
+			},
+		})
+	}
+
+	return result
+}
+
 func createPosts(cma *ctf.Contentful, items []item, space string) error {
 	fmt.Println("creating new 'post' content type")
 	if err := cma.ContentTypes.Upsert(space, postContentType); err != nil {
@@ -184,7 +200,7 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 		content := convertToMarkdown(post.Content)
 		finalSlug := createValidSlug(post.PostName)
 
-		category, _ := extractCategoryAndTags(post.Categories)
+		category, tags := extractCategoryAndTags(post.Categories)
 
 		entry := &ctf.Entry{
 			Sys: &ctf.Sys{
@@ -218,6 +234,9 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 							ID:       "cat_" + category,
 						},
 					},
+				},
+				"tags": map[string]interface{}{
+					"en-US": generateTagArray(tags),
 				},
 				"published": map[string]string{
 					"en-US": reformatPubDate(post.PubDate),
