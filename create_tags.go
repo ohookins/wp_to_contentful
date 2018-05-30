@@ -15,7 +15,7 @@ var tagContentType = &ctf.ContentType{
 		&ctf.Field{
 			ID:   "realname",
 			Name: "Realname",
-			Type: ctf.FieldTypeText,
+			Type: ctf.FieldTypeSymbol,
 		},
 	},
 }

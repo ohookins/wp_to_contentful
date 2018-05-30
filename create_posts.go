@@ -24,12 +24,12 @@ var (
 			&ctf.Field{
 				ID:   "slug",
 				Name: "Slug",
-				Type: ctf.FieldTypeText,
+				Type: ctf.FieldTypeSymbol,
 			},
 			&ctf.Field{
 				ID:   "title",
 				Name: "Title",
-				Type: ctf.FieldTypeText,
+				Type: ctf.FieldTypeSymbol,
 			},
 			&ctf.Field{
 				ID:       "author",

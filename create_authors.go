@@ -15,22 +15,22 @@ var authorContentType = &ctf.ContentType{
 		&ctf.Field{
 			ID:   "login",
 			Name: "Login",
-			Type: ctf.FieldTypeText,
+			Type: ctf.FieldTypeSymbol,
 		},
 		&ctf.Field{
 			ID:   "email",
 			Name: "Email",
-			Type: ctf.FieldTypeText,
+			Type: ctf.FieldTypeSymbol,
 		},
 		&ctf.Field{
 			ID:   "firstName",
 			Name: "First Name",
-			Type: ctf.FieldTypeText,
+			Type: ctf.FieldTypeSymbol,
 		},
 		&ctf.Field{
 			ID:   "lastName",
 			Name: "First Name",
-			Type: ctf.FieldTypeText,
+			Type: ctf.FieldTypeSymbol,
 		},
 	},
 }
