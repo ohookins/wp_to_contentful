@@ -19,8 +19,8 @@ func generateRedirects(m map[string]string) {
 	// Make another map for eliminating duplicates due to protocol changes
 	uniquePaths := make(map[string]bool)
 
-    // TODO: Probably need to generate redirects as well for WP redirect links
-    // to attachments? Check access logs!
+	// TODO: Probably need to generate redirects as well for WP redirect links
+	// to attachments? Check access logs!
 	for src, dst := range m {
 		srcPath := sitePrefix.ReplaceAllString(src, "")
 		dstPath := sitePrefix.ReplaceAllString(dst, "")

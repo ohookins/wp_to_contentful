@@ -94,6 +94,9 @@ func replaceURLs(body string) string {
 	return body
 }
 
+// Line breaks in Wordpress are automatically turned into <br/> elements in
+// blog posts even if the actual stored document doesn't contain them.
+// Replace line breaks with HTML breaks before converting to markdown.
 func convertSourceDocumentLineEnds(content string) []byte {
 	return []byte(strings.Replace(content, "\n", "<br/>", -1))
 }
