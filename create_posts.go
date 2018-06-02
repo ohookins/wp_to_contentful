@@ -258,8 +258,8 @@ func createPosts(cma *ctf.Contentful, items []item, space string) error {
 		// Add this entry to the list of URLs to replace. Entries are processed
 		// in chronological order from the XML dump so if we have
 		// back-references we should be able to replace all references.
-		replacementURLs[strings.Replace(post.Guid, "http:", "https:", -1)] = "/" + post.PostName
-		replacementURLs[post.Guid] = "/" + post.PostName
+		replacementURLs[strings.Replace(post.Guid, "http:", "https:", -1)] = "/posts/" + post.PostName
+		replacementURLs[post.Guid] = "/posts/" + post.PostName
 	}
 
 	return nil

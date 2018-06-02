@@ -6,7 +6,10 @@ import (
 	"regexp"
 )
 
-var sitePrefix = regexp.MustCompile(`^https?://paperairoplane.net`)
+var (
+	sitePrefix              = regexp.MustCompile(`^https?://paperairoplane.net`)
+	separateQueryParameters = regexp.MustCompile("[?&]")
+)
 
 func generateRedirects(m map[string]string) {
 	f, err := os.OpenFile("_redirects", os.O_RDWR|os.O_CREATE, 0644)
@@ -25,9 +28,13 @@ func generateRedirects(m map[string]string) {
 		srcPath := sitePrefix.ReplaceAllString(src, "")
 		dstPath := sitePrefix.ReplaceAllString(dst, "")
 
-		if !uniquePaths[srcPath] {
-			fmt.Fprintf(f, "%s %s\n", srcPath, dstPath)
-			uniquePaths[srcPath] = true
+		// Replace ? and & with spaces, which helps the source pattern match
+		// Netlify's redirect pattern style.
+		srcNetlifyPattern := separateQueryParameters.ReplaceAllString(srcPath, " ")
+
+		if !uniquePaths[srcNetlifyPattern] {
+			fmt.Fprintf(f, "%s %s\n", srcNetlifyPattern, dstPath)
+			uniquePaths[srcNetlifyPattern] = true
 		}
 	}
 }
